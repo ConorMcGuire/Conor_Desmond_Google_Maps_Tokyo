@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset=UTF-8>
+        <meta name=viewport content="width=device-width, initial-scale=1.0">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <title>Google Maps Route Finder example</title>
+
+        <style>
+            #map 
+            {
+                width:100%;
+                height:600px;
+                border:thin solid #CCC;
+            }
+
+            #control-panel
+            {
+                background-color: #fff;
+                margin-bottom:50px;
+            }
+
+            .select-location-label
+            {
+                font-weight:bold;
+                min-width:40px;
+                display:inline-block;
+            }             
+            #directions
+            {
+                width:100%;
+                margin:0px;
+                margin-top:20px;
+                margin-bottom:50px;
+            }
+            /*            details{
+                            transition: height 3s ease-in;
+                        }*/
+            details[open] summary ~ * {
+  animation: sweep 5s ease-in-out;
+}
+
+@keyframes sweep {
+  0%    {opacity: 0; margin-left: -10px}
+  100%  {opacity: 1; margin-left: 0px}
+}
+        </style>
+
+        <!-- Google Maps -->
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt80W2HhxSPPEd2w9cxXTja4MpMwixSjM&libraries=places"></script>
+
+        <script>
+            let directionsRenderer = null
+
+            window.onload = () =>
+            {
+                let map = new google.maps.Map(document.getElementById("map"), {
+                    zoom: 10,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                })
+
+                let start = document.getElementById('start');
+                new google.maps.places.Autocomplete(start);
+
+                let end = document.getElementById('end');
+                new google.maps.places.Autocomplete(end);
+
+                directionsRenderer = new google.maps.DirectionsRenderer()
+                directionsRenderer.setMap(map)
+
+                directionsRenderer.setPanel(document.getElementById("directions"))
+
+//                calculateRoute()
+            }
+
+
+            const calculateRoute = (travelMode) =>
+            {
+                let start = document.getElementById("start").value
+                let end = document.getElementById("end").value
+
+                let request = {origin: start,
+                    destination: end,
+                    travelMode: travelMode}
+
+                directionsService = new google.maps.DirectionsService()
+                directionsService.route(request, (route, status) =>
+                {
+                    if (status === google.maps.DirectionsStatus.OK)
+                    {
+                        directionsRenderer.setDirections(route)
+                    }
+                })
+            }
+
+//            let defaultBounds = new google.maps.LatLngBounds(
+//                    new google.maps.LatLng(-33.8902, 151.1759),
+//                    new google.maps.LatLng(-33.8474, 151.2631));
+//
+//            let start = document.getElementById('start');
+//
+//            let searchBox = new google.maps.places.SearchBox(start, {
+//                bounds: defaultBounds
+//            });
+        </script>
+    </head>
+
+    <body>
+        <div id=control-panel>
+            <span class=select-location-label>Start:</span>
+            <input type="text" id="start"/>
+
+            <br>
+            <span class=select-location-label>End:</span>
+            <input type="text" id="end"/>
+
+            <br>
+            <div>
+                <button onclick="calculateRoute('DRIVING')"><i class="material-icons">directions_car</i></button>
+                <button onclick="calculateRoute('TRANSIT')"><i class="material-icons">directions_transit</i></button>
+                <button onclick="calculateRoute('WALKING')"><i class="material-icons">directions_walk</i></button>
+                <button onclick="calculateRoute('BICYCLING')"><i class="material-icons">directions_bike</i></button>
+            </div>
+
+        </div>
+
+        <details id=directions><summary>Directions</summary></details>
+
+        <div id=map></div>           
+    </body>
+</html> 
