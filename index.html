@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
 
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <title>Custom Google Map Demo</title> 
 
         <style>
@@ -39,7 +40,8 @@
     <body>
         <h1>Tokyo Olympics Travel Guide</h1>
         <div id="mapOptions">
-           
+           <label for='search'>Search: </label><input type="text" id="search"> 
+            <input type="button" value="Submit" onclick="displayMap()">
         </div>
         <div id="mapDiv"></div>
 
@@ -65,31 +67,38 @@
                     let CONTENT = 0;
                     let LATITUDE = 1;
                     let LONGITUDE = 2;
-                    let locations = [['Tokyo International Airport', 35.57900537031612, 139.77692805721375]];
+                    let locations = [['Tokyo', 35.69716474853184, 139.7827453087969]];
 
-                    let dkit_map = new google.maps.Map(document.getElementById('mapDiv'),
-                            {zoom: 9,
-                                center: new google.maps.LatLng(35.69493418404904, 139.7662658179479),
+                   let tokyo_map = new google.maps.Map(document.getElementById('mapDiv'),
+                            {zoom: 12,
+                                center: new google.maps.LatLng(35.69716474853184, 139.7827453087969),
                                 mapTypeId: google.maps.MapTypeId.ROADMAP});
 
                     let location_marker;
                     let mapWindow = new google.maps.InfoWindow();
+//                    if (document.getElementById('restaurant').checked) {
+//                        option = document.getElementById('restaurant').value;
+//                    } else
+//                    {
+//                        option = document.getElementById('cafe').value;
+//                    }
+//                    console.log(option)
 
                     for (let i = 0; i < locations.length; i++)
                     {
                         location_marker = new google.maps.Marker({position: new google.maps.LatLng(locations[i][1], locations[i][2]),
-                            map: dkit_map});
+                            map: tokyo_map});
 
                         google.maps.event.addListener(location_marker, 'click', (function (location_marker, i)
                         {
                             return function ()
                             {
                                 mapWindow.setContent(locations[i][0]);
-                                mapWindow.open(dkit_map, location_marker);
+                                mapWindow.open(tokyo_map, location_marker);
 
                                 services_centre_location = {lat: locations[i][1], lng: locations[i][2]}
 
-                                let service = new google.maps.places.PlacesService(dkit_map);
+                                let service = new google.maps.places.PlacesService(tokyo_map);
 //                                service.nearbySearch(
 //                                        {
 //                                            location: services_centre_location, // centre of the search
@@ -101,7 +110,7 @@
                                 service.textSearch(
                                         {
                                             location: services_centre_location,
-                                            radius: 500,
+                                            radius: 5000,
                                             type: [serviceType]
 
                                         }, getNearbyServicesMarkers);
@@ -125,7 +134,7 @@
                                 let request = {
                                     placeId: results[i].place_id
                                 };
-                                service = new google.maps.places.PlacesService(dkit_map);
+                                service = new google.maps.places.PlacesService(tokyo_map);
                                 service.getDetails(request, createServiceMarkers);
                             }
                         }
@@ -164,7 +173,7 @@
                                 };
                         let marker = new google.maps.Marker(
                                 {
-                                    map: dkit_map,
+                                    map: tokyo_map,
                                     position: place.geometry.location,
                                     icon: icon
                                 });
@@ -207,7 +216,7 @@
                             }
                             htmlContent += "</p>"
                             mapWindow.setContent(htmlContent);
-                            mapWindow.open(dkit_map, this);
+                            mapWindow.open(tokyo_map, this);
                         });
                     }
                 }
