@@ -38,15 +38,18 @@
     </head> 
 
     <body>
-        <h1>Tokyo Olympics Travel Guide</h1>
+        <h1>Tokyo Olympics City Guide</h1>
+        <p>Enter your hotel or location to find nearby services while you're in Tokyo for the olympics!</p>
         <div id="mapOptions">
-           <label for='search'>Search: </label><input type="text" id="search"> 
+            <span class=select-location-label>Enter the name of your hotel:</span>
+            <input type="text" id="hotel"/>
+            <label for='search'>Search: </label><input type="text" id="search"> 
             <input type="button" value="Submit" onclick="displayMap()">
         </div>
         <div id="mapDiv"></div>
 
         <!-- Google Maps -->
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt80W2HhxSPPEd2w9cxXTja4MpMwixSjM&libraries=places"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt80W2HhxSPPEd2w9cxXTja4MpMwixSjM&libraries=places,geocoding"></script>
 
         <script>
                 window.onload = onAllAssetsLoaded;
@@ -55,6 +58,8 @@
                 {
                     // hide the webpage loading message
                     document.getElementById('loadingMessage').style.visibility = "hidden";
+
+
 
                     displayMap();
                 }
@@ -69,20 +74,52 @@
                     let LONGITUDE = 2;
                     let locations = [['Tokyo', 35.69716474853184, 139.7827453087969]];
 
-                   let tokyo_map = new google.maps.Map(document.getElementById('mapDiv'),
+                    let hotel = document.getElementById("hotel").value
+                    console.log(hotel);
+
+                    let tokyo_map = new google.maps.Map(document.getElementById('mapDiv'),
                             {zoom: 12,
                                 center: new google.maps.LatLng(35.69716474853184, 139.7827453087969),
                                 mapTypeId: google.maps.MapTypeId.ROADMAP});
 
                     let location_marker;
                     let mapWindow = new google.maps.InfoWindow();
-//                    if (document.getElementById('restaurant').checked) {
-//                        option = document.getElementById('restaurant').value;
-//                    } else
-//                    {
-//                        option = document.getElementById('cafe').value;
-//                    }
-//                    console.log(option)
+
+                    let input = document.getElementById('hotel');
+                    let options = {
+                        types: ['geocode']
+                    }
+//                  The following code to reset the centre of the map based on the user's location input was adapted from:
+//                  https://stackoverflow.com/questions/15315017/google-places-get-latlng/15315483#15315483
+                    let autocomplete = new google.maps.places.Autocomplete(input, options);
+
+                    google.maps.event.addListener(autocomplete, 'place_changed', function () {
+                        let place = autocomplete.getPlace();
+
+//                        console.log(place)
+//                        console.log(place.formatted_address)
+//                        console.log(place.name)
+//                        console.log(place.geometry.location)
+//                        console.log(place.geometry.location[0])
+
+                        // Show the map to the current location selected
+                        if (place.geometry.viewport) {
+                            tokyo_map.fitBounds(place.geometry.viewport)
+                        } else {
+                            tokyo_map.setCenter(place.geometry.location)
+                            tokyo_map.setZoom(12)
+                        }
+
+                        var marker = new google.maps.Marker({
+                            position: place.geometry.location,
+                            map: tokyo_map,
+                            draggable: true,
+                        });
+
+                        $.each(place.geometry.location, function (key, value) {
+                            console.log(key + ": " + value)
+                        })
+                    })
 
                     for (let i = 0; i < locations.length; i++)
                     {
@@ -110,7 +147,7 @@
                                 service.textSearch(
                                         {
                                             location: services_centre_location,
-                                            radius: 5000,
+                                            radius: 500,
                                             type: [serviceType]
 
                                         }, getNearbyServicesMarkers);
@@ -150,22 +187,6 @@
 
                     function createMarker(place)
                     {
-//                        let icon;
-//                        if (option == "cafe")
-//                        {
-//                            icon =
-//                                    {
-//                                        url: "images/cafe.png", // url
-//                                        scaledSize: new google.maps.Size(30, 30), // scale the image to an icon size
-//                                    };
-//                        } else
-//                        {
-//                            icon =
-//                                    {
-//                                        url: "images/restaurant.png", // url
-//                                        scaledSize: new google.maps.Size(30, 30), // scale the image to an icon size
-//                                    };
-//                        }
                         let icon =
                                 {
                                     url: place.icon, // url
@@ -212,7 +233,7 @@
                             let reviews = place.reviews[0]
                             if (reviews != null)
                             {
-                                htmlContent += "<strong>Recent review:</strong> " + reviews.text+ "</br>"
+                                htmlContent += "<strong>Recent review:</strong> " + reviews.text + "</br>"
                             }
                             htmlContent += "</p>"
                             mapWindow.setContent(htmlContent);
