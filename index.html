@@ -3,8 +3,11 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <link href="./css.css" rel="stylesheet" type="text/css"/>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link href="./favicon.ico" rel="icon" type="image/x-icon" />
-        <link href="css/css.css" rel="stylesheet" type="text/css"/>
+        
         <title>Custom Google Map Demo</title> 
 
         
@@ -12,42 +15,44 @@
     
 
     <body>
-        <h1>Tokyo Olympics Travel Guide</h1>
-        <p>Enter your hotel or location to find nearby services while you're in Tokyo for the olympics!</p>
+        <h1 id="head_h1">Tokyo Olympics City Guide  <img src="rings.png" width=80px;></h1>
+        <p id="head_p">This website helps you find your way in Tokyo while you are here for the Olympic Games! Click on any Olympic venue to see nearby services.</p>
         <div id="mapOptions">
-            <span class=select-location-label>Enter the name of your hotel or location:</span>
+            <span class=select-location-label>Enter the name of your hotel or location to centre the map on: </span>
             <input type="text" id="hotel"/>
             </br>
-            <!--            <label for='search'>Search: </label><input type="text" id="search"> 
-                        <input type="button" value="Submit" onclick="displayMap()">-->
             <div id='serviceOptions'>
-                <input type='radio' id='cafe' name='cafe' checked='checked' onclick='displayMap()'>
+                <input type='radio' id='cafe' name='services' checked='checked' onclick='displayMap()'>
                 <label for='cafe'><i class="material-icons">local_cafe</i></label>
 
-                <input type='radio' id='restaurant' name='restaurant' onclick='displayMap()'>
+                <input type='radio' id='restaurant' name='services' onclick='displayMap()'>
                 <label for='restaurant'><i class="material-icons">local_dining</i></label>
 
-                <input type='radio' id='shop' name='shop' onclick='displayMap()'>
-                <label for='shop'><i class="material-icons">local_offer</i></label>
+                <input type='radio' id='store' name='services' onclick='displayMap()'>
+                <label for='store'><i class="material-icons">local_offer</i></label>
 
-                <input type='radio' id='bar' name='bar' onclick='displayMap()'>
+                <input type='radio' id='bar' name='services' onclick='displayMap()'>
                 <label for='bar'><i class="material-icons">local_bar</i></label>  
             </div>
+        </div>
 
-<!--            </br>
-            <div id='travelOptions'>
-                <input type='radio' id='bus' name='cafe' checked='checked' onclick='displayMap()'>
-                <label for='cafe'><i class="material-icons">local_cafe</i></label>
-                <input type='radio' id='taxi' name='restaurant' onclick='displayMap()'>
-                <label for='restaurant'><i class="material-icons">local_dining</i></label>
-                <input type='radio' id='car' name='shop' onclick='displayMap()'>
-                <label for='shop'><i class="material-icons">local_offer</i></label>
-                <input type='radio' id='train' name='bar' onclick='displayMap()'>
-                <label for='bar'><i class="material-icons">local_bar</i></label>  
-                
-                <input type='radio' id='train' name='bar' onclick='displayMap()'>
-                <label for='bar'><i class="material-icons">local_bar</i></label>  
-            </div>-->
+        <div id=control-panel>
+            <span class=select-location-label>Start:</span>
+            <input type="text" id="start"/>
+
+            <br>
+            <span class=select-location-label>End:</span>
+            <input type="text" id="end"/>
+
+            <br>
+            <div>
+                <button onclick="calculateRoute('DRIVING')"><i class="material-icons">directions_car</i></button>
+                <button onclick="calculateRoute('WALKING')"><i class="material-icons">directions_walk</i></button>
+                <button onclick="calculateRoute('BICYCLING')"><i class="material-icons">directions_bike</i></button>
+            </div>
+
+            <details id=directions><summary>Directions</summary></details>
+            <p>Once you've decided where to go, enter the your start and end points here to find directions</p>
         </div>
         <div id="mapDiv"></div>
 
@@ -55,15 +60,46 @@
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBkRX5UBj2zqD3f5Bmb73nSOUmonaHNIjY&libraries=places,geocoding"></script>
 
         <script>
+            let tokyo_map
+            let directionsRenderer = null
+            var radios = document.getElementsByTagName('input');
+            for(i=0; i<radios.length; i++ ) {
+                radios[i].onclick = function(e) {
+                    if(e.ctrlKey || e.metaKey) {
+                        this.checked = false;
+                    }
+                }
+            }
+        
             window.onload = onAllAssetsLoaded;
             document.write("<div id='loadingMessage'>Loading...</div>");
             function onAllAssetsLoaded()
             {
                 // hide the webpage loading message
                 document.getElementById('loadingMessage').style.visibility = "hidden";
-
                 displayMap();
+
             }
+
+
+            const calculateRoute = (travelMode) =>
+                            {
+                                let start = document.getElementById("start").value
+                                let end = document.getElementById("end").value
+
+                                let request = {origin: start,
+                                    destination: end,
+                                    travelMode: travelMode}
+
+                                directionsService = new google.maps.DirectionsService()
+                                directionsService.route(request, (route, status) =>
+                                {
+                                    if (status === google.maps.DirectionsStatus.OK)
+                                    {
+                                        directionsRenderer.setDirections(route)
+                                    }
+                                })
+                            }
 
 
             function displayMap()
@@ -74,7 +110,10 @@
                 let LATITUDE = 1;
                 let LONGITUDE = 2;
                 let locations = [];
-
+                let location_marker;
+                let mapWindow = new google.maps.InfoWindow();
+                let serviceType = document.querySelector('input[name="services"]:checked').value
+                
                 fetch("./stadiums.json")
                 .then(response => response.json())
                 .then(jsonMapData => 
@@ -101,8 +140,8 @@
                             services_centre_location = {lat: locations[i][1], lng: locations[i][2]}
 
                             let service = new google.maps.places.PlacesService(tokyo_map);
-                            let serviceType = document.getElementById('search').value;
-                            console.log(document.getElementById('search').value)
+                            let serviceType = document.getElementById('hotel').value;
+                            console.log(document.getElementById('hotel').value)
                             service.textSearch(
                                     {
                                         location: services_centre_location,
@@ -113,9 +152,6 @@
                         }
                     })(location_marker, i));
                 }
-
-                
-
             })
 
                 for(let i = 0; i < locations.length; i++){
@@ -127,7 +163,7 @@
                 let hotel = document.getElementById("hotel").value
                 console.log(hotel);
 
-                let tokyo_map = new google.maps.Map(document.getElementById('mapDiv'),
+                tokyo_map = new google.maps.Map(document.getElementById('mapDiv'),
                         {zoom: 12,
                             center: new google.maps.LatLng(35.69716474853184, 139.7827453087969),
                             mapTypeId: google.maps.MapTypeId.ROADMAP,
@@ -136,9 +172,20 @@
                             }
                         });
 
+                        
+                        let start = document.getElementById('start');
+                                new google.maps.places.Autocomplete(start);
+
+                                let end = document.getElementById('end');
+                                new google.maps.places.Autocomplete(end);
+
+                                directionsRenderer = new google.maps.DirectionsRenderer()
+                                directionsRenderer.setMap(tokyo_map)
+
+                                directionsRenderer.setPanel(document.getElementById("directions"))
+
                 hidePointsOfInterest(tokyo_map);
-                let location_marker;
-                let mapWindow = new google.maps.InfoWindow();
+                
 
                 let input = document.getElementById('hotel');
                 let options = {
@@ -150,12 +197,6 @@
 
                 google.maps.event.addListener(autocomplete, 'place_changed', function () {
                     let place = autocomplete.getPlace();
-
-//                        console.log(place)
-//                        console.log(place.formatted_address)
-//                        console.log(place.name)
-//                        console.log(place.geometry.location)
-//                        console.log(place.geometry.location[0])
 
                     // Show the map to the current location selected
                     if (place.geometry.viewport) {
@@ -188,7 +229,6 @@
                     {
                         for (let i = 0; i < results.length; i++)
                         {
-//                                createMarker(results[i]);
                             let request = {
                                 placeId: results[i].place_id
                             };
@@ -222,59 +262,98 @@
                 }
 
                 function createMarker(place)
-                {
-                    let icon =
-                            {
-                                url: place.icon, // url
-                                scaledSize: new google.maps.Size(30, 30), // scale the image to an icon size
-                            };
-                    let marker = new google.maps.Marker(
-                            {
-                                map: tokyo_map,
-                                position: place.geometry.location,
-                                icon: icon
-                            });
+                                {
+                                    let icon =
+                                            {
+                                                url: place.icon, // url
+                                                scaledSize: new google.maps.Size(30, 30), // scale the image to an icon size
+                                            };
+                                    let marker = new google.maps.Marker(
+                                            {
+                                                map: tokyo_map,
+                                                position: place.geometry.location,
+                                                icon: icon
+                                            });
 
-                    servicesArray.push(marker);
+                                    servicesArray.push(marker);
 
-                    google.maps.event.addListener(marker, 'click', function ()
-                    {
-                        console.log(place)
-//                            let htmlContent = "<p><strong>" + place.name + "</strong><br>" + place.formatted_address + "</br>" + place.international_phone_number + "</p>";
-                        let htmlContent = "<p><h3>" + place.name + "</h3><br>"
-                        if (place.photos != null)
-                        {
-                            htmlContent += "<img src='" + place.photos[0].getUrl({'maxWidth': 150, 'maxHeight': 150}) + "' alt='" + place.name + "'>" + "</br>"
-                        }
-                        for (let i = 0; i < place.address_components.length; i++)
-                        {
-                            htmlContent += place.address_components[i].long_name + "</br>"
-                        }
-                        let phone = place.international_phone_number
-                        if (phone != null)
-                        {
-                            htmlContent += phone + "</br>"
-                        }
-                        let website = place.website
-                        if (website != null)
-                        {
-                            htmlContent += "<a href='" + website + "'>Visit Website</a></br>"
-                        }
-                        htmlContent += "</br>"
-                        let rating = place.rating
-                        if (rating != null)
-                        {
-                            htmlContent += "<strong>Rating:</strong> " + rating + "</br>"
-                        }
-                        let reviews = place.reviews[0]
-                        if (reviews != null)
-                        {
-                            htmlContent += "<strong>Recent review:</strong> " + reviews.text + "</br>"
-                        }
-                        htmlContent += "</p>"
-                        mapWindow.setContent(htmlContent);
-                        mapWindow.open(tokyo_map, this);
-                    });
+                                    google.maps.event.addListener(marker, 'click', function ()
+                                    {
+                                        console.log(place)
+        //                            let htmlContent = "<p><strong>" + place.name + "</strong><br>" + place.formatted_address + "</br>" + place.international_phone_number + "</p>";
+                                        let htmlContent = "<p><h3>" + place.name + "</h3><br>"
+                                        if (place.photos != null)
+                                        {
+                                            htmlContent += "<img src='" + place.photos[0].getUrl({'maxWidth': 300, 'maxHeight': 300}) + "' alt='" + place.name + "'>" + "</br>"
+                                        }
+                                        let phone = place.international_phone_number
+                                        if (phone != null)
+                                        {
+                                            htmlContent += phone + "</br>"
+                                        }
+                                        if (place.opening_hours != null)
+                                        {
+                                            if (place.opening_hours.isOpen())
+                                            {
+                                                htmlContent += "Currently Open"
+                                            }
+                                            else
+                                            {
+                                                htmlContent += "Currently Closed"
+                                            }
+                                            htmlContent += "</br>"
+                                        }
+                                        let website = place.website
+                                        if (website != null)
+                                        {
+                                            htmlContent += "<a href='" + website + "' target='blank'>Visit Website</a></br>"
+                                        }
+                                        htmlContent += "</br>"
+                                        if (place.price_level != null)
+                                        {
+                                            htmlContent += "<strong>Price Level: </strong>"
+                                            if (place.price_level == 1)
+                                            {
+                                                htmlContent += "Inexpensive"
+                                            }
+                                            else if (place.price_level == 2)
+                                            {
+                                                htmlContent += "Moderate"
+                                            }
+                                            else if (place.price_level == 3)
+                                            {
+                                                htmlContent += "Expensive"
+                                            }
+                                            else if (place.price_level == 4)
+                                            {
+                                                htmlContent += "Very Expensive"
+                                            }
+                                            htmlContent += "</br>"
+                                        }
+                                        let rating = place.rating
+                                        if (rating != null)
+                                        {
+                                            //star-rating css from https://www.w3schools.com/howto/howto_css_star_rating.asp
+                                            htmlContent += "<strong>Rating:</strong>"
+                                            for (let i = 0; i < Math.round(rating); i++)
+                                            {
+                                                htmlContent += "<span class='fa fa-star checked'></span>"
+                                            }
+                                            for (let x = 0; x < 5 - Math.round(rating); x++)
+                                            {
+                                                htmlContent += "<span class='fa fa-star'></span>"
+                                            }
+                                            htmlContent += "</br>"
+                                        }
+                                        let reviews = place.reviews[0]
+                                        if (reviews != null)
+                                        {
+                                            htmlContent += "<strong>Recent review:</strong> " + reviews.text + "</br>"
+                                        }
+                                        htmlContent += "</p>"
+                                        mapWindow.setContent(htmlContent);
+                                        mapWindow.open(tokyo_map, this);
+                                    });
                 }
             }
 </script>
