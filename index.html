@@ -24,16 +24,16 @@
             <!--            <label for='search'>Search: </label><input type="text" id="search"> 
                         <input type="button" value="Submit" onclick="displayMap()">-->
             <div id='serviceOptions'>
-                <input type='radio' id='cafe' name='cafe' checked='checked' onclick='displayMap()'>
+                <input type='radio' id='cafe' name='services' checked='checked' onclick='displayMap()'>
                 <label for='cafe'><i class="material-icons">local_cafe</i></label>
 
-                <input type='radio' id='restaurant' name='restaurant' onclick='displayMap()'>
+                <input type='radio' id='restaurant' name='services' onclick='displayMap()'>
                 <label for='restaurant'><i class="material-icons">local_dining</i></label>
 
-                <input type='radio' id='shop' name='shop' onclick='displayMap()'>
+                <input type='radio' id='shop' name='services' onclick='displayMap()'>
                 <label for='shop'><i class="material-icons">local_offer</i></label>
 
-                <input type='radio' id='bar' name='bar' onclick='displayMap()'>
+                <input type='radio' id='bar' name='services' onclick='displayMap()'>
                 <label for='bar'><i class="material-icons">local_bar</i></label>  
             </div>
 
@@ -251,7 +251,7 @@
                                 let htmlContent = "<p><h3>" + place.name + "</h3><br>"
                                 if (place.photos != null)
                                 {
-                                    htmlContent += "<img src='" + place.photos[0].getUrl({'maxWidth': 150, 'maxHeight': 150}) + "' alt='" + place.name + "'>" + "</br>"
+                                    htmlContent += "<img src='" + place.photos[0].getUrl({'maxWidth': 300, 'maxHeight': 300}) + "' alt='" + place.name + "'>" + "</br>"
                                 }
                                 let phone = place.international_phone_number
                                 if (phone != null)
