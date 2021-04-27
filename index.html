@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
 
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <title>Custom Google Map Demo</title> 
 
         <style>
@@ -37,180 +38,239 @@
     </head> 
 
     <body>
-        <h1>Tokyo Olympics Travel Guide</h1>
+        <h1>Tokyo Olympics City Guide</h1>
+        <p>Enter your hotel or location to find nearby services while you're in Tokyo for the olympics!</p>
         <div id="mapOptions">
-           
+            <span class=select-location-label>Enter the name of your hotel or location:</span>
+            <input type="text" id="hotel"/>
+            </br>
+            <!--            <label for='search'>Search: </label><input type="text" id="search"> 
+                        <input type="button" value="Submit" onclick="displayMap()">-->
+            <div id='serviceOptions'>
+                <input type='radio' id='cafe' name='cafe' checked='checked' onclick='displayMap()'>
+                <label for='cafe'><i class="material-icons">local_cafe</i></label>
+
+                <input type='radio' id='restaurant' name='restaurant' onclick='displayMap()'>
+                <label for='restaurant'><i class="material-icons">local_dining</i></label>
+
+                <input type='radio' id='shop' name='shop' onclick='displayMap()'>
+                <label for='shop'><i class="material-icons">local_offer</i></label>
+
+                <input type='radio' id='bar' name='bar' onclick='displayMap()'>
+                <label for='bar'><i class="material-icons">local_bar</i></label>  
+            </div>
+
+<!--            </br>
+            <div id='travelOptions'>
+                <input type='radio' id='bus' name='cafe' checked='checked' onclick='displayMap()'>
+                <label for='cafe'><i class="material-icons">local_cafe</i></label>
+
+                <input type='radio' id='taxi' name='restaurant' onclick='displayMap()'>
+                <label for='restaurant'><i class="material-icons">local_dining</i></label>
+
+                <input type='radio' id='car' name='shop' onclick='displayMap()'>
+                <label for='shop'><i class="material-icons">local_offer</i></label>
+
+                <input type='radio' id='train' name='bar' onclick='displayMap()'>
+                <label for='bar'><i class="material-icons">local_bar</i></label>  
+                
+                <input type='radio' id='train' name='bar' onclick='displayMap()'>
+                <label for='bar'><i class="material-icons">local_bar</i></label>  
+            </div>-->
         </div>
         <div id="mapDiv"></div>
 
         <!-- Google Maps -->
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt80W2HhxSPPEd2w9cxXTja4MpMwixSjM&libraries=places"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt80W2HhxSPPEd2w9cxXTja4MpMwixSjM&libraries=places,geocoding"></script>
 
         <script>
-                window.onload = onAllAssetsLoaded;
-                document.write("<div id='loadingMessage'>Loading...</div>");
-                function onAllAssetsLoaded()
-                {
-                    // hide the webpage loading message
-                    document.getElementById('loadingMessage').style.visibility = "hidden";
-
-                    displayMap();
-                }
-
-
-                function displayMap()
-                {
-                    // These constants must start at 0
-                    // These constants must match the data layout in the 'locations' array below
-                    let CONTENT = 0;
-                    let LATITUDE = 1;
-                    let LONGITUDE = 2;
-                    let locations = [['Tokyo International Airport', 35.57900537031612, 139.77692805721375]];
-
-                    let dkit_map = new google.maps.Map(document.getElementById('mapDiv'),
-                            {zoom: 9,
-                                center: new google.maps.LatLng(35.69493418404904, 139.7662658179479),
-                                mapTypeId: google.maps.MapTypeId.ROADMAP});
-
-                    let location_marker;
-                    let mapWindow = new google.maps.InfoWindow();
-
-                    for (let i = 0; i < locations.length; i++)
+                    window.onload = onAllAssetsLoaded;
+                    document.write("<div id='loadingMessage'>Loading...</div>");
+                    function onAllAssetsLoaded()
                     {
-                        location_marker = new google.maps.Marker({position: new google.maps.LatLng(locations[i][1], locations[i][2]),
-                            map: dkit_map});
+                        // hide the webpage loading message
+                        document.getElementById('loadingMessage').style.visibility = "hidden";
 
-                        google.maps.event.addListener(location_marker, 'click', (function (location_marker, i)
+                        displayMap();
+                    }
+
+
+                    function displayMap()
+                    {
+                        // These constants must start at 0
+                        // These constants must match the data layout in the 'locations' array below
+                        let CONTENT = 0;
+                        let LATITUDE = 1;
+                        let LONGITUDE = 2;
+                        let locations = [['Tokyo', 35.69716474853184, 139.7827453087969]];
+
+                        let hotel = document.getElementById("hotel").value
+                        console.log(hotel);
+
+                        let tokyo_map = new google.maps.Map(document.getElementById('mapDiv'),
+                                {zoom: 12,
+                                    center: new google.maps.LatLng(35.69716474853184, 139.7827453087969),
+                                    mapTypeId: google.maps.MapTypeId.ROADMAP});
+
+                        let location_marker;
+                        let mapWindow = new google.maps.InfoWindow();
+
+                        let input = document.getElementById('hotel');
+                        let options = {
+                            types: ['geocode']
+                        }
+//                  The following code to reset the centre of the map based on the user's location input was adapted from:
+//                  https://stackoverflow.com/questions/15315017/google-places-get-latlng/15315483#15315483
+                        let autocomplete = new google.maps.places.Autocomplete(input, options);
+
+                        google.maps.event.addListener(autocomplete, 'place_changed', function () {
+                            let place = autocomplete.getPlace();
+
+//                        console.log(place)
+//                        console.log(place.formatted_address)
+//                        console.log(place.name)
+//                        console.log(place.geometry.location)
+//                        console.log(place.geometry.location[0])
+
+                            // Show the map to the current location selected
+                            if (place.geometry.viewport) {
+                                tokyo_map.fitBounds(place.geometry.viewport)
+                            } else {
+                                tokyo_map.setCenter(place.geometry.location)
+                                tokyo_map.setZoom(12)
+                            }
+
+                            var marker = new google.maps.Marker({
+                                position: place.geometry.location,
+                                map: tokyo_map,
+                                draggable: true,
+                            });
+
+                            $.each(place.geometry.location, function (key, value) {
+                                console.log(key + ": " + value)
+                            })
+                        })
+
+                        for (let i = 0; i < locations.length; i++)
                         {
-                            return function ()
+                            location_marker = new google.maps.Marker({position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+                                map: tokyo_map});
+
+                            google.maps.event.addListener(location_marker, 'click', (function (location_marker, i)
                             {
-                                mapWindow.setContent(locations[i][0]);
-                                mapWindow.open(dkit_map, location_marker);
+                                return function ()
+                                {
+                                    mapWindow.setContent(locations[i][0]);
+                                    mapWindow.open(tokyo_map, location_marker);
 
-                                services_centre_location = {lat: locations[i][1], lng: locations[i][2]}
+                                    services_centre_location = {lat: locations[i][1], lng: locations[i][2]}
 
-                                let service = new google.maps.places.PlacesService(dkit_map);
+                                    let service = new google.maps.places.PlacesService(tokyo_map);
 //                                service.nearbySearch(
 //                                        {
 //                                            location: services_centre_location, // centre of the search
 //                                            radius: 500, // radius (in metres) of the search
 //                                            type: [option]
 //                                        }, getNearbyServicesMarkers);
-                                let serviceType = document.getElementById('search').value;
-                                console.log(document.getElementById('search').value)
-                                service.textSearch(
-                                        {
-                                            location: services_centre_location,
-                                            radius: 500,
-                                            type: [serviceType]
+                                    let serviceType = document.getElementById('search').value;
+                                    console.log(document.getElementById('search').value)
+                                    service.textSearch(
+                                            {
+                                                location: services_centre_location,
+                                                radius: 500,
+                                                type: [serviceType]
 
-                                        }, getNearbyServicesMarkers);
-                            }
-                        })(location_marker, i));
-                    }
+                                            }, getNearbyServicesMarkers);
+                                }
+                            })(location_marker, i));
+                        }
 
-                    let servicesArray = [];
+                        let servicesArray = [];
 
-                    function getNearbyServicesMarkers(results, status)
-                    {
-                        servicesArray.map(place =>
+                        function getNearbyServicesMarkers(results, status)
                         {
-                            place.setVisible(false)
-                        })
-                        if (status === google.maps.places.PlacesServiceStatus.OK)
-                        {
-                            for (let i = 0; i < results.length; i++)
+                            servicesArray.map(place =>
                             {
+                                place.setVisible(false)
+                            })
+                            if (status === google.maps.places.PlacesServiceStatus.OK)
+                            {
+                                for (let i = 0; i < results.length; i++)
+                                {
 //                                createMarker(results[i]);
-                                let request = {
-                                    placeId: results[i].place_id
-                                };
-                                service = new google.maps.places.PlacesService(dkit_map);
-                                service.getDetails(request, createServiceMarkers);
+                                    let request = {
+                                        placeId: results[i].place_id
+                                    };
+                                    service = new google.maps.places.PlacesService(tokyo_map);
+                                    service.getDetails(request, createServiceMarkers);
+                                }
                             }
                         }
-                    }
 
-                    function createServiceMarkers(place, status)
-                    {
-                        if (status == google.maps.places.PlacesServiceStatus.OK)
+                        function createServiceMarkers(place, status)
                         {
-                            createMarker(place);
+                            if (status == google.maps.places.PlacesServiceStatus.OK)
+                            {
+                                createMarker(place);
+                            }
                         }
-                    }
 
-                    function createMarker(place)
-                    {
-//                        let icon;
-//                        if (option == "cafe")
-//                        {
-//                            icon =
-//                                    {
-//                                        url: "images/cafe.png", // url
-//                                        scaledSize: new google.maps.Size(30, 30), // scale the image to an icon size
-//                                    };
-//                        } else
-//                        {
-//                            icon =
-//                                    {
-//                                        url: "images/restaurant.png", // url
-//                                        scaledSize: new google.maps.Size(30, 30), // scale the image to an icon size
-//                                    };
-//                        }
-                        let icon =
-                                {
-                                    url: place.icon, // url
-                                    scaledSize: new google.maps.Size(30, 30), // scale the image to an icon size
-                                };
-                        let marker = new google.maps.Marker(
-                                {
-                                    map: dkit_map,
-                                    position: place.geometry.location,
-                                    icon: icon
-                                });
-
-                        servicesArray.push(marker);
-
-                        google.maps.event.addListener(marker, 'click', function ()
+                        function createMarker(place)
                         {
-                            console.log(place)
+                            let icon =
+                                    {
+                                        url: place.icon, // url
+                                        scaledSize: new google.maps.Size(30, 30), // scale the image to an icon size
+                                    };
+                            let marker = new google.maps.Marker(
+                                    {
+                                        map: tokyo_map,
+                                        position: place.geometry.location,
+                                        icon: icon
+                                    });
+
+                            servicesArray.push(marker);
+
+                            google.maps.event.addListener(marker, 'click', function ()
+                            {
+                                console.log(place)
 //                            let htmlContent = "<p><strong>" + place.name + "</strong><br>" + place.formatted_address + "</br>" + place.international_phone_number + "</p>";
-                            let htmlContent = "<p><h3>" + place.name + "</h3><br>"
-                            if (place.photos != null)
-                            {
-                                htmlContent += "<img src='" + place.photos[0].getUrl({'maxWidth': 150, 'maxHeight': 150}) + "' alt='" + place.name + "'>" + "</br>"
-                            }
-                            for (let i = 0; i < place.address_components.length; i++)
-                            {
-                                htmlContent += place.address_components[i].long_name + "</br>"
-                            }
-                            let phone = place.international_phone_number
-                            if (phone != null)
-                            {
-                                htmlContent += phone + "</br>"
-                            }
-                            let website = place.website
-                            if (website != null)
-                            {
-                                htmlContent += "<a href='" + website + "'>Visit Website</a></br>"
-                            }
-                            htmlContent += "</br>"
-                            let rating = place.rating
-                            if (rating != null)
-                            {
-                                htmlContent += "<strong>Rating:</strong> " + rating + "</br>"
-                            }
-                            let reviews = place.reviews[0]
-                            if (reviews != null)
-                            {
-                                htmlContent += "<strong>Recent review:</strong> " + reviews.text+ "</br>"
-                            }
-                            htmlContent += "</p>"
-                            mapWindow.setContent(htmlContent);
-                            mapWindow.open(dkit_map, this);
-                        });
+                                let htmlContent = "<p><h3>" + place.name + "</h3><br>"
+                                if (place.photos != null)
+                                {
+                                    htmlContent += "<img src='" + place.photos[0].getUrl({'maxWidth': 150, 'maxHeight': 150}) + "' alt='" + place.name + "'>" + "</br>"
+                                }
+                                for (let i = 0; i < place.address_components.length; i++)
+                                {
+                                    htmlContent += place.address_components[i].long_name + "</br>"
+                                }
+                                let phone = place.international_phone_number
+                                if (phone != null)
+                                {
+                                    htmlContent += phone + "</br>"
+                                }
+                                let website = place.website
+                                if (website != null)
+                                {
+                                    htmlContent += "<a href='" + website + "'>Visit Website</a></br>"
+                                }
+                                htmlContent += "</br>"
+                                let rating = place.rating
+                                if (rating != null)
+                                {
+                                    htmlContent += "<strong>Rating:</strong> " + rating + "</br>"
+                                }
+                                let reviews = place.reviews[0]
+                                if (reviews != null)
+                                {
+                                    htmlContent += "<strong>Recent review:</strong> " + reviews.text + "</br>"
+                                }
+                                htmlContent += "</p>"
+                                mapWindow.setContent(htmlContent);
+                                mapWindow.open(tokyo_map, this);
+                            });
+                        }
                     }
-                }
         </script>
     </body>
 </html>
