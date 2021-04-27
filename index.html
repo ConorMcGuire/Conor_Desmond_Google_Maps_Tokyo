@@ -84,6 +84,7 @@
                         let mapWindow = new google.maps.InfoWindow();
 
                         console.log(document.querySelector('input[name="services"]:checked').value)
+                        let serviceType = document.querySelector('input[name="services"]:checked').value
 
                         fetch("./stadiums.json")
                                 .then(response => response.json())
@@ -111,7 +112,7 @@
                                                 services_centre_location = {lat: locations[i][1], lng: locations[i][2]}
 
                                                 let service = new google.maps.places.PlacesService(tokyo_map)
-                                                let serviceType = document.querySelector('input[name="services"]:checked').value
+//                                                let serviceType = document.querySelector('input[name="services"]:checked').value
                                                 service.textSearch(
                                                         {
                                                             location: services_centre_location,
