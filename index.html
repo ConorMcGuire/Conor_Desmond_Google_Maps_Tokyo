@@ -24,16 +24,16 @@
             <!--            <label for='search'>Search: </label><input type="text" id="search"> 
                         <input type="button" value="Submit" onclick="displayMap()">-->
             <div id='serviceOptions'>
-                <input type='radio' id='cafe' name='services' checked='checked' onclick='displayMap()'>
+                <input type='radio' id='cafe' name='services' value="cafe" checked='checked' onclick='displayMap()'>
                 <label for='cafe'><i class="material-icons">local_cafe</i></label>
 
-                <input type='radio' id='restaurant' name='services' onclick='displayMap()'>
+                <input type='radio' id='restaurant' name='services' value="restaurant" onclick='displayMap()'>
                 <label for='restaurant'><i class="material-icons">local_dining</i></label>
 
-                <input type='radio' id='shop' name='services' onclick='displayMap()'>
+                <input type='radio' id='shop' name='services' value="shop" onclick='displayMap()'>
                 <label for='shop'><i class="material-icons">local_offer</i></label>
 
-                <input type='radio' id='bar' name='services' onclick='displayMap()'>
+                <input type='radio' id='bar' name='services' value="bar" onclick='displayMap()'>
                 <label for='bar'><i class="material-icons">local_bar</i></label>  
             </div>
 
@@ -83,6 +83,8 @@
                         let location_marker;
                         let mapWindow = new google.maps.InfoWindow();
 
+                        console.log(document.querySelector('input[name="services"]:checked').value)
+
                         fetch("./stadiums.json")
                                 .then(response => response.json())
                                 .then(jsonMapData =>
@@ -108,9 +110,8 @@
 
                                                 services_centre_location = {lat: locations[i][1], lng: locations[i][2]}
 
-                                                let service = new google.maps.places.PlacesService(tokyo_map);
-                                                let serviceType = document.getElementById('hotel').value;
-                                                console.log(document.getElementById('hotel').value)
+                                                let service = new google.maps.places.PlacesService(tokyo_map)
+                                                let serviceType = document.querySelector('input[name="services"]:checked').value
                                                 service.textSearch(
                                                         {
                                                             location: services_centre_location,
@@ -133,7 +134,7 @@
                         }
 
                         let hotel = document.getElementById("hotel").value
-                        console.log(hotel);
+//                        console.log(hotel);
 
                         let tokyo_map = new google.maps.Map(document.getElementById('mapDiv'),
                                 {zoom: 12,
@@ -269,7 +270,7 @@
                                 {
                                     //star-rating css from https://www.w3schools.com/howto/howto_css_star_rating.asp
                                     htmlContent += "<strong>Rating:</strong>"
-                                    for (let i = 0; i < Math.round(rating); i++) 
+                                    for (let i = 0; i < Math.round(rating); i++)
                                     {
                                         htmlContent += "<span class='fa fa-star checked'></span>"
                                     }
