@@ -16,13 +16,12 @@
 
     <body>
         <h1>Tokyo Olympics City Guide</h1>
-        <p>Enter your hotel or location to find nearby services while you're in Tokyo for the olympics!</p>
+        <p>This website helps you find your way in Tokyo while you are here for the Olympic Games! Click on any Olympic venue to see nearby services.</p>
         <div id="mapOptions">
-            <span class=select-location-label>Enter the name of your hotel or location:</span>
+            <span class=select-location-label>Enter the name of your hotel or location to centre the map on: </span>
             <input type="text" id="hotel"/>
             </br>
-            <!--            <label for='search'>Search: </label><input type="text" id="search"> 
-                        <input type="button" value="Submit" onclick="displayMap()">-->
+            <h3>Service Options</h3>
             <div id='serviceOptions'>
                 <input type='radio' id='cafe' name='services' value="cafe" checked='checked' onclick='displayMap()'>
                 <label for='cafe'><i class="material-icons">local_cafe</i></label>
@@ -36,6 +35,9 @@
                 <input type='radio' id='bar' name='services' value="bar" onclick='displayMap()'>
                 <label for='bar'><i class="material-icons">local_bar</i></label>  
             </div>
+            
+            <h3>Directions</h3>
+            <p>Once you've decided where to go, enter the your start and end points here to find directions</p>
 
             <div id=control-panel>
                 <span class=select-location-label>Start:</span>
@@ -48,7 +50,8 @@
                 <br>
                 <div>
                     <button onclick="calculateRoute('DRIVING')"><i class="material-icons">directions_car</i></button>
-                    <button onclick="calculateRoute('TRANSIT')"><i class="material-icons">directions_transit</i></button>
+                    <!--<button onclick="calculateRoute('TRANSIT')"><i class="material-icons">directions_transit</i></button>-->
+                    <!--Public transport directions are not supported in Japan so this was removed from the project. https://developers.google.com/maps/faq#transit_directions_countries-->
                     <button onclick="calculateRoute('WALKING')"><i class="material-icons">directions_walk</i></button>
                     <button onclick="calculateRoute('BICYCLING')"><i class="material-icons">directions_bike</i></button>
                 </div>
@@ -289,12 +292,45 @@
                                         {
                                             htmlContent += phone + "</br>"
                                         }
+                                        if (place.opening_hours != null)
+                                        {
+                                            if (place.opening_hours.isOpen())
+                                            {
+                                                htmlContent += "Currently Open"
+                                            }
+                                            else
+                                            {
+                                                htmlContent += "Currently Closed"
+                                            }
+                                            htmlContent += "</br>"
+                                        }
                                         let website = place.website
                                         if (website != null)
                                         {
-                                            htmlContent += "<a href='" + website + "'>Visit Website</a></br>"
+                                            htmlContent += "<a href='" + website + "' target='blank'>Visit Website</a></br>"
                                         }
                                         htmlContent += "</br>"
+                                        if (place.price_level != null)
+                                        {
+                                            htmlContent += "<strong>Price Level: </strong>"
+                                            if (place.price_level == 1)
+                                            {
+                                                htmlContent += "Inexpensive"
+                                            }
+                                            else if (place.price_level == 2)
+                                            {
+                                                htmlContent += "Moderate"
+                                            }
+                                            else if (place.price_level == 3)
+                                            {
+                                                htmlContent += "Expensive"
+                                            }
+                                            else if (place.price_level == 4)
+                                            {
+                                                htmlContent += "Very Expensive"
+                                            }
+                                            htmlContent += "</br>"
+                                        }
                                         let rating = place.rating
                                         if (rating != null)
                                         {
