@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html> 
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <link href="./favicon.ico" rel="icon" type="image/x-icon" />
+        <link href="css/css.css" rel="stylesheet" type="text/css"/>
+        <title>Custom Google Map Demo</title> 
+
+        
+    </head> 
+    
+
+    <body>
+        <h1>Tokyo Olympics Travel Guide</h1>
+        <div class="sidenav">
+          <a href="#cafe" >Cafe</a>
+          <a href="#hotels">Hotels</a>
+          <a href="#rest">Restaurants</a>
+          <a href="#stadiums">Stadiums</a>
+          <a href="#bus">Bus Stations</a>
+          <a href="#train">Train Stations</a>
+        </div>
+        <div id="mapOptions">
+           
+        </div>
+        
+        <div id="mapDiv"></div>
+        
+        <!-- Google Maps -->
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBkRX5UBj2zqD3f5Bmb73nSOUmonaHNIjY&libraries=places"></script>
+
+        <script>
+                window.onload = onAllAssetsLoaded;
+                document.write("<div id='loadingMessage'>Loading...</div>");
+                function onAllAssetsLoaded()
+                {
+                    // hide the webpage loading message
+                    document.getElementById('loadingMessage').style.visibility = "hidden";
+                    displayMap();
+                   
+                }
+
+
+                function displayMap()
+                {
+                    // These constants must start at 0
+                    // These constants must match the data layout in the 'locations' array below
+                    let CONTENT = 0;
+                    let LATITUDE = 1;
+                    let LONGITUDE = 2;
+                    let locations = [['Tokyo International Airport', 35.57900537031612, 139.77692805721375]];
+
+                    let dkit_map = new google.maps.Map(document.getElementById('mapDiv'),
+                            {zoom: 9,
+                                center: new google.maps.LatLng(35.69493418404904, 139.7662658179479),
+                                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                                mapTypeControlOptions: {
+                                 mapTypeIds: ["roadmap", "satellite", "hide_poi"]
+                            }});
+                            hidePointsOfInterest(dkit_map);
+                    let location_marker;
+                    let mapWindow = new google.maps.InfoWindow();
+
+                    for (let i = 0; i < locations.length; i++)
+                    {
+                        location_marker = new google.maps.Marker({position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+                            map: dkit_map});
+
+                        google.maps.event.addListener(location_marker, 'click', (function (location_marker, i)
+                        {
+                            return function ()
+                            {
+                                mapWindow.setContent(locations[i][0]);
+                                mapWindow.open(dkit_map, location_marker);
+
+                                services_centre_location = {lat: locations[i][1], lng: locations[i][2]}
+
+                                let service = new google.maps.places.PlacesService(dkit_map);
+                                service.nearbySearch(
+                                        {
+                                            location: services_centre_location, // centre of the search
+                                            radius: 5000, // radius (in metres) of the search
+                                            type: "Cafe"
+                                        }, getNearbyServicesMarkers);
+                                        
+                                        
+                                let serviceType = document.getElementById('search').value;
+                                console.log(document.getElementById('search').value)
+                                service.textSearch(
+                                        {
+                                            location: services_centre_location,
+                                            radius: 500,
+                                            type: [serviceType]
+
+                                        }, getNearbyServicesMarkers);
+                            }
+                        })(location_marker, i));
+                    }
+
+                    let servicesArray = [];
+                    
+                    function hidePointsOfInterest(map)
+                    {
+                        let styles = [
+                            {
+                                "featureType": "poi",
+                                "stylers": [{"visibility": "off"}]
+                            }
+                        ]
+
+                        let styledMapType = new google.maps.StyledMapType(styles, {name: "POI Hidden", alt: "Hide Points of Interest"})
+                        map.mapTypes.set("hide_poi", styledMapType)
+
+                        map.setMapTypeId("hide_poi")
+                    }
+                    
+                    function getNearbyServicesMarkers(results, status)
+                    {
+                        servicesArray.map(place =>
+                        {
+                            place.setVisible(false)
+                        })
+                        if (status === google.maps.places.PlacesServiceStatus.OK)
+                        {
+                            for (let i = 0; i < results.length; i++)
+                            {
+//                                createMarker(results[i]);
+                                let request = {
+                                    placeId: results[i].place_id
+                                };
+                                service = new google.maps.places.PlacesService(dkit_map);
+                                service.getDetails(request, createServiceMarkers);
+                            }
+                        }
+                    }
+
+                    function createServiceMarkers(results, status)
+                    {
+                        if (status == google.maps.places.PlacesServiceStatus.OK)
+                        {
+                            results.map(result => {
+                                createMarker(result);
+                            })
+                        }
+                    }
+
+                    function createMarker(place)
+                    {
+                        let icon = {
+                            url: place.icon, // url
+                            scaledSize: new google.maps.Size(30, 30), // scale the image to an icon size
+                        }
+
+                        let marker = new google.maps.Marker({
+                            map: dkit_map,
+                            icon: icon,
+                            position: place.geometry.location
+                        })
+
+                        google.maps.event.addListener(marker, "click", () =>
+                        {
+                            request = {
+                                placeId: place.place_id,
+                                fields: ["name", "formatted_address", "place_id", "international_phone_number", "icon", "geometry"],
+                            };
+                            service.getDetails(request, (placeDetails) => infoWindow.setContent("<p><strong>" + placeDetails.name + "</strong><br>" + placeDetails.formatted_address + "</br>" + placeDetails.international_phone_number + "</p>"))
+
+                            infoWindow.open(dkit_map, marker)
+                        })
+                    }
+                }
+
+        </script>
+    </body>
+</html>
