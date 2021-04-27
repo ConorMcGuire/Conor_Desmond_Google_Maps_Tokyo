@@ -6,7 +6,7 @@
 
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link href="./favicon.ico" rel="icon" type="image/x-icon" />
-        <link href="css/css.css" rel="stylesheet" type="text/css"/>
+        <link href="css.css" rel="stylesheet" type="text/css"/>
         <title>Custom Google Map Demo</title> 
 
         
@@ -57,7 +57,7 @@
         <div id="mapDiv"></div>
 
         <!-- Google Maps -->
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBkRX5UBj2zqD3f5Bmb73nSOUmonaHNIjY&libraries=places,geocoding"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt80W2HhxSPPEd2w9cxXTja4MpMwixSjM&libraries=places,geocoding"></script>
 
         <script>
             window.onload = onAllAssetsLoaded;
@@ -79,6 +79,8 @@
                 let LATITUDE = 1;
                 let LONGITUDE = 2;
                 let locations = [];
+                let location_marker;
+                let mapWindow = new google.maps.InfoWindow();
 
                 fetch("./stadiums.json")
                 .then(response => response.json())
@@ -106,8 +108,8 @@
                             services_centre_location = {lat: locations[i][1], lng: locations[i][2]}
 
                             let service = new google.maps.places.PlacesService(tokyo_map);
-                            let serviceType = document.getElementById('search').value;
-                            console.log(document.getElementById('search').value)
+                            let serviceType = document.getElementById('hotel').value;
+                            console.log(document.getElementById('hotel').value)
                             service.textSearch(
                                     {
                                         location: services_centre_location,
@@ -142,8 +144,7 @@
                         });
 
                 hidePointsOfInterest(tokyo_map);
-                let location_marker;
-                let mapWindow = new google.maps.InfoWindow();
+                
 
                 let input = document.getElementById('hotel');
                 let options = {
